@@ -32,15 +32,20 @@ def render_base(template_name, folder='templates', **kwargs):
 
 class ServerHttp:
 
-    def __init__(self, ADDRES:tuple, index='index.html', url='', context:dict={}, handler=None):
+    def __init__(self, ADDRES:tuple, index='index.html', url='', context:dict={}, handler=None, function=None):
         self.ADDRES = ADDRES
         self.list_client = []
         self.views = []
         self.index = index
         self.url = url
-        self.context = context
+        self.function = function
+        if function:
+            self.context = function()
+        else:
+            self.context = context
         self.handler = handler
-        self.views.append([self.url, self.index, self.context, self.handler])
+
+        self.views.append([self.url, self.index, self.context, self.handler, self.function])
         self.templates = []
 
     def add_templates(self, template):
@@ -58,7 +63,7 @@ class ServerHttp:
         self.sock.listen(number_max_connections)
         self.sock.settimeout(time)
 
-    def create_view(self, url, template, context:dict, handler=None):
+    def create_view(self, url, template, context:dict, handler=None, function=None):
         """
         Метож создает вид который определяет адресс и его шаблон а так же данные которые должны быть переданы в шаблон
         :param url: название адреса
@@ -66,7 +71,7 @@ class ServerHttp:
         :param context: данные в шаблоне
         :return:
         """
-        self.views.append([url, template, context, handler])
+        self.views.append([url, template, context, handler, function])
 
     def change_view(self, what, which, on_what):
         """
@@ -124,7 +129,7 @@ class ServerHttp:
                     # Принимаем инф от пользователя и декодируем ее
                     data = iwtd.recv(2048)
                     # print(data)
-                    params = parse_qs(data)
+                    # params = parse_qs(data)
 
                     data = data.decode()
                     print(data)
@@ -140,6 +145,10 @@ class ServerHttp:
                         list_data = data.split('/')
                         print(len(list_data))
 
+                        num = 0
+                        for i in list_data:
+                            print(f'{num} : {i}')
+                            num += 1
                         # Если содинение которое отправила данные и то которое начал принимать данные одно и то же то продолжаем следующие действия
                         if iwtd == owtd:
 
@@ -147,7 +156,7 @@ class ServerHttp:
                                 # print(list_data[1])
                                 if list_data[1] == 'favicon.ico HTTP':
                                     self.list_client.remove(owtd)
-                                    client.close()
+                                    # client.close()
                                     break
                             except:
                                 pass
@@ -155,8 +164,9 @@ class ServerHttp:
                                 stop = False
                                 for date in self.views:
                                     if not stop:
+                                        # Для
                                         # print(len(list_data))
-                                        if len(list_data) == 15 or len(list_data) == 18:
+                                        if 'Chrome' in list_data[2] and (len(list_data) == 15 or len(list_data) == 18) or 'Yandex' in list_data[2] and (len(list_data) == 17 or len(list_data) == 20):
                                             if date[0] == '':
                                                 url = ' HTTP'
                                                 temp = date[1]
@@ -167,7 +177,7 @@ class ServerHttp:
                                                 context = date[2]
 
                                         # В случае если имеем данные передаваемые в строке
-                                        if len(list_data) == 16:
+                                        if 'Chrome' in list_data[2] and len(list_data) == 16 or 'Yandex' in list_data[2] and len(list_data) == 18:
                                             url = date[0]
                                             temp = date[1]
                                             context = date[2]
@@ -203,16 +213,58 @@ class ServerHttp:
                                             pass
                                     else:
                                         break
-                                if list_data[0] == 'POST ':
-                                    # text = requests.post(list_data)
-                                    # text = text.json()['form']
-                                    # pprint.pprint(list_data)
-                                    print(params.decode())
+                                # if list_data[0] == 'POST ':
+                                #     pass
+                                #     # text = requests.post(list_data)
+                                #     # text = text.json()['form']
+                                #     # pprint.pprint(list_data)
+                                #     # print(params.decode())
+                        if list_data[0] == 'POST ':
+                            # Если мы получаем пост запрос то мы с момошью функции split получаем данные которые были получени от него
+                            print(list_data[-1])
+                            data_post = list_data[-1].split(' ')
+                            print(data_post)
+                            data_post = data_post[-1].split('\r\n\r\n')
+                            print(data_post)
+                            data_post = data_post[-1].split('&')
+                            # создаем словарь с данными
+                            request = {'POST': 'POST',}
+                            for par in data_post:
+                                par = par.split('=')
+                                request[par[0]] = par[1]
+                            # В списке self.views изем url от которого мы получили POST запрос и далее вызываем функцию обработчик
+                            for view in self.views:
+                                if f'{view[0]} HTTP' == list_data[1]:
+                                    view[3](request)
+
+
+
 if __name__ == '__main__':
+    def request_post_output(request):
+        if request['POST'] == 'POST':
+            import datetime
+            name = request['text']
+            topic = request['topic']
+            email = request['email']
+            date = str(datetime.datetime.now()).replace(' ', '')
+            path = f'post_output\\{date}.txt'
+            with open(path, encoding='utf-8', mode='w') as nm:
+                list_text = [f'Email {email}\n', f'Заголовок: {topic}\n', f'Тексе: {name}\n']
+                nm.writelines(list_text)
+
+
+
     context = {'name': 'Алексей', 'year': 1993, 'city': 'Самара'}
+
     serv = ServerHttp(('127.0.0.1', 8000), context=context, url='index')
+
     serv.create_view('about', 'about.html', {})
-    serv.create_view('contact', 'list_contact.html', {})
+    serv.create_view('contact', 'list_contact.html', {}, request_post_output)
+
     serv.add_templates('template')
+
+
+
+
     serv.creating_socket(1, 1)
     serv.run_server(time=0.1)
