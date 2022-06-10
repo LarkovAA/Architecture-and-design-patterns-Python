@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% set name_course = object_list.name_course %}
+
+<center>
+    <h1> Вы на курсе {{ name_course }}</h1>
+</center>
+<p>Добрый день. Вы попали на сайт на курс {{ name_course }}.
+    Вы можете провести занятия как онлайн так и в офлайн режиме.</p>
+<p>
+    В ближайщую неделю онлайн занятия будут проходить.
+<ul>
+    {% for el in object_list.date_online%}
+    <li> {{ el }}</li>
+    {% endfor %}
+</ul>
+</p>
+
+<p>
+    В ближайщую неделю офлайн занятия будут проходить.
+<ul>
+    {% for el in object_list.date_offline%}
+    <li> {{ el[0] }} время, место {{ el[1] }}</li>
+    {% endfor %}
+</ul>
+</p>
+
+<form method="post">
+    <fieldset>
+        <legend>Записть на курс {{ name_course }}</legend>
+        <input type="hidden" name="name_course" value="{{ name_course }}">
+        <p><label for="topic">Оффлайн <em> </em></label><input type="radio" id="offline" name="line" value="offline">
+            <label for="topic">Онлайн <em> </em></label><input type="radio" id="online" name="line" value="online">
+        </p>
+
+        <p><label for="text">Имя <em>*</em></label><input type="name" id="name" name="name"></p>
+        <p><label for="text">Фамилия <em>*</em></label><input type="surname" id="surname" name="surname"></p>
+        <p><label for="email">E-mail</label><input type="email" id="email" name="email"></p>
+        <p><label for="tel">Телефон</label><input type="tel" id="tel" name="tel"></p>
+        <p><button type="submit">Отправить</button></p>
+    </fieldset>
+
+</form>
+
+{% endblock %}
