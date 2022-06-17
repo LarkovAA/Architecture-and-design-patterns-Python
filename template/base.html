@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Курсы по обучению программированию</title>
+</head>
+
+<body>
+    {% block nav %}
+    <ul>
+        <li><a href="/index">Главная</a></li>
+        {% if object_list.course %}
+            {% for el in object_list.course %}
+            <li><a href="/{{el[0]}}"> {{el[1]}}</a></li>
+            {% endfor %}
+        {% endif %}
+        <!-- <li><a href="#">Курсы по Python</a></li>
+        <li><a href="#">Курсы по Java</a></li>
+        <li><a href="#">Курсы по C++</a></li>
+        <li><a href="#">Курсы по C#</a></li> -->
+    </ul>
+    {% endblock %}
+
+    {% block content %}
+
+    {% endblock %}
+
+
+</body>
+
+</html>
