@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% set name_course = object_list.name_course %}
+
+<center>
+    <h1> Редактирование курса</h1>
+</center>
+<ul>
+    <p> Онлайн курсы </p>
+    {% for el in object_list.online %}
+    {% for key, val in el.items() %}
+    <li>  <label for="topic">{{ key }}: {{ val }} <em> </em></label><input type="radio" name="course" value="{{ key }}, online" form="form_course"></li>
+    {% endfor %}
+    {% endfor %}
+</ul>
+
+    <p> Офлайн курсы</p>
+<ul>
+    {% for el in object_list.offline%}
+    {% for key, val in el.items() %}
+    <li>  <label for="topic">{{ key }}: {{ val }} <em> </em></label><input type="radio" name="course" value="{{ key }}, offline" form="form_course"></li>
+    {% endfor %}
+    {% endfor %}
+</ul>
+
+
+<form method="post" name="form_course">
+    <fieldset>
+        <p><label for="topic">Название курса <em> </em></label><input type="text" id="" name="name_course"></p>
+        <p><label for="topic">Дата <em> </em></label><input type="text" id="date" name="date"></p>
+        <p><label for="topic">Время <em> </em></label><input type="text" id="time" name="time"></p>
+        <p><button type="submit">Отправить</button></p>
+    </fieldset>
+
+</form>
+
+{% endblock %}
